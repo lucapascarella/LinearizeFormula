@@ -37,14 +37,14 @@ def find_literals(line: str) -> [str]:
     return literals
 
 
-def find_intermediates(line: str) -> Bean:
+def get_literal_bean(line: str) -> Bean:
     literals = get_literals_N(line)
     row_index = get_row_index_N(line)
     subeq = get_subeq_N(line)
     return Bean(row_index, line, subeq, literals)
 
 
-def refind_intermediates(b: Bean) -> Bean:
+def update_literal_bean(b: Bean) -> Bean:
     literals = get_literals_N(b.subeq)
     b.literals = literals
     return b
@@ -53,42 +53,46 @@ def refind_intermediates(b: Bean) -> Bean:
 if __name__ == '__main__':
     print("*** Main app started ***\n")
 
-    with open('input.txt', 'r', encoding='utf8') as read_file:
+    with open('data/input.txt', 'r', encoding='utf8') as read_file:
+
+        # Find literals of the main equation
+        print('Main eq literals:')
         eq = read_file.readline().strip()
-
-        print('Equation literals:')
         eq_literals = find_literals(eq)
-        for literal in eq_literals:
-            print(literal)
+        ll = ', '.join(eq_literals)
+        print(ll)
 
-        subsituends = {}  # type: Dict[str, Bean]
-        lines = read_file.readlines()
-        for line in lines:
-            if line is not '' and line is not '\n':
-                b = find_intermediates(line.strip())
-                subsituends[b.index] = b
+        # Index remaining lines by left literal
+        substituends = {}  # type: Dict[str, Bean]
+        for line in read_file.readlines():
+            line = line.strip()
+            if line is not '':
+                b = get_literal_bean(line)
+                substituends[b.index] = b
 
-        cond = len(subsituends)
+        # This is a recursive problem, but we can address in a inefficient linear way
+        cond = len(substituends)
         while cond > 0:
-            cond = len(subsituends)
-            for k, v in subsituends.items():
+            cond = len(substituends)
+            for k, v in substituends.items():
                 if v.literals is not None:
                     for l in v.literals:
                         # print(k + ' ' + l)
-                        new = '(' + subsituends[l].subeq + ')'
+                        new = '(' + substituends[l].subeq + ')'
                         v.subeq = v.subeq.replace(l, new)
-                    v = refind_intermediates(v)
+                    v = update_literal_bean(v)
                 else:
                     cond -= 1
 
+        # Perform last substitution in the main equation
         for eq_l in eq_literals:
-            new = '(' + subsituends[eq_l].subeq + ')'
+            new = '(' + substituends[eq_l].subeq + ')'
             eq = eq.replace(eq_l, new)
 
         print('\nFinal equation:')
         # print(eq)
 
-        with open('output.txt', 'w', encoding='utf8') as write_file:
+        with open('data/output.txt', 'w', encoding='utf8') as write_file:
             write_file.write(eq)
             write_file.close()
 
