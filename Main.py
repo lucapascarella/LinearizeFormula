@@ -50,52 +50,53 @@ def update_literal_bean(b: Bean) -> Bean:
     return b
 
 
+def return_len_unit(len: int) -> str:
+    new = len / 1024
+    if new < 0:
+        return str(len)
+    else:
+        new2 = new / 1024
+        if new2 < 0:
+            return str(new + ' k')
+
+
 if __name__ == '__main__':
     print("*** Main app started ***\n")
 
-    with open('data/input.txt', 'r', encoding='utf8') as read_file:
+    with open('data/input.txt', 'r', encoding='ascii') as read_file:
 
         # Find literals of the main equation
-        print('Main eq literals:')
+        # print('Main eq literals:')
         eq = read_file.readline().strip()
-        eq_literals = find_literals(eq)
-        ll = ', '.join(eq_literals)
-        print(ll)
+        # eq_literals = find_literals(eq)
+        # print(', '.join(eq_literals))
 
         # Index remaining lines by left literal
-        substituends = {}  # type: Dict[str, Bean]
+        substitutions = {}  # type: Dict[str, Bean]
         for line in read_file.readlines():
             line = line.strip()
             if line is not '':
                 b = get_literal_bean(line)
-                substituends[b.index] = b
-
-        # This is a recursive problem, but we can address in a inefficient linear way
-        index = 0
-        cond = len(substituends)
-        while cond > 0:
-            cond = len(substituends)
-            for k, v in substituends.items():
-                if v.literals is not None:
-                    for l in v.literals:
-                        # print(k + ' ' + l)
-                        new = '(' + substituends[l].subeq + ')'
-                        v.subeq = v.subeq.replace(l, new)
-                    v = update_literal_bean(v)
-                else:
-                    cond -= 1
-            index +=1
-
-        print('Eqs cleaned in: {} steps'.format(index))
+                substitutions[b.index] = b
 
         # Perform last substitution in the main equation
-        for eq_l in eq_literals:
-            new = '(' + substituends[eq_l].subeq + ')'
-            eq = eq.replace(eq_l, new)
+        iteration = 0
+        exit_while = False
+        while exit_while is False:
+            eq_literals = find_literals(eq)
+            if eq_literals is None:
+                exit_while = True
+            else:
+                print('Iteration: {}, Found: {} literals'.format(iteration, len(eq_literals)))
+                for eq_l in eq_literals:
+                    new = '(' + substitutions[eq_l].subeq + ')'
+                    eq = eq.replace(eq_l, new)
+            iteration += 1
 
-        print('\nFinal equation:')
-        # print(eq)
+        # Print results
+        print('\nFinal equation length: {} bytes'.format(len(eq)))
 
+        # Save equation
         with open('data/output.txt', 'w', encoding='utf8') as write_file:
             write_file.write(eq)
             write_file.close()
