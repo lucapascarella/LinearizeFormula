@@ -71,6 +71,7 @@ if __name__ == '__main__':
                 substituends[b.index] = b
 
         # This is a recursive problem, but we can address in a inefficient linear way
+        index = 0
         cond = len(substituends)
         while cond > 0:
             cond = len(substituends)
@@ -83,6 +84,9 @@ if __name__ == '__main__':
                     v = update_literal_bean(v)
                 else:
                     cond -= 1
+            index +=1
+
+        print('Eqs cleaned in: {} steps'.format(index))
 
         # Perform last substitution in the main equation
         for eq_l in eq_literals:
