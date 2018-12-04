@@ -7,10 +7,12 @@ from Bean import Bean
 
 def get_literals_N(msg: str) -> [str]:
     regex = r"\s*(N\d+)\*"
+    regex_exlude = r"\w+(N\d+)\*"
 
     matches = re.findall(regex, msg)
+    matches_exclude = re.findall(regex_exlude, msg)
     if matches:
-        return matches
+        return (list(set(matches) - set(matches_exclude)))
     return None
 
 
@@ -84,7 +86,7 @@ if __name__ == '__main__':
         exit_while = False
         while exit_while is False:
             eq_literals = find_literals(eq)
-            if eq_literals is None:
+            if eq_literals is None or len(eq_literals) == 0:
                 exit_while = True
             else:
                 print('Iteration: {}, Found: {} literals'.format(iteration, len(eq_literals)))
